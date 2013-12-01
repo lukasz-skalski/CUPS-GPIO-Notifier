@@ -17,9 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-
 /* Tested on 2013-09-25-wheezy-raspbian */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,26 +26,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <glib.h>
 #include <gio/gio.h>
 
-
 /* 
  * Globals
  */
 GMainLoop *loop = NULL;
-gint gpio_num = 1;
-gint time_to_off = 10;
+gint gpio_num = 23;
+gint time_to_off = 180;
 guint source_tag = 0;
-
 
 /* 
  * Commandline options 
  */
 GOptionEntry entries[] =
 {
-  { "gpio", 'g', 0, G_OPTION_ARG_INT, &gpio_num, "xxx", NULL },
-  { "time", 't', 0, G_OPTION_ARG_INT, &time_to_off, "xxx", NULL },
+  { "gpio", 'g', 0, G_OPTION_ARG_INT, &gpio_num, "GPIO Output Number [defaut: 23]", NULL },
+  { "time", 't', 0, G_OPTION_ARG_INT, &time_to_off, "number of seconds to turn off the printer [default: 180]", NULL },
   { NULL }
 };
-
 
 /*
  * unix_signal_handler
@@ -58,17 +53,14 @@ void unix_signal_handler (int signo)
     g_main_loop_quit (loop);
 }
 
-
 /*
  * printer_off_timeout
  */
 int printer_off_timeout (gpointer user_data)
 {
-  //g_print ("OFF\n");
-  //set_GPIO (gpio_num,1);
+  set_GPIO (gpio_num,1);
   return FALSE;
 }
-
 
 /*
  * dbus_signal_callback
@@ -85,10 +77,8 @@ void dbus_signal_callback (GDBusConnection *connection,
     g_source_remove (source_tag);
   
   source_tag = g_timeout_add_seconds (time_to_off, printer_off_timeout,NULL);
-  //g_print ("ON\n");
-  //set_GPIO (gpio_num,0);
+  set_GPIO (gpio_num,0);
 }
-
 
 /*
  * export_GPIO
@@ -108,7 +98,6 @@ int export_GPIO (gint gpio_pin){
   return 0;
 }
 
-
 /*
  * unexport_GPIO
  */
@@ -126,7 +115,6 @@ int unexport_GPIO (gint gpio_pin){
   fclose (fd);
   return 0;
 }
-
 
 /*
  * set_output_GPIO
@@ -150,7 +138,6 @@ int set_output_GPIO (gint gpio_pin){
   return 0;
 }
 
-
 /*
  * set_GPIO
  */
@@ -172,7 +159,6 @@ int set_GPIO (gint gpio_pin, gint value){
   fclose (fd);
   return 0;
 }
-
 
 /*
  * demonize
@@ -202,7 +188,6 @@ void demonize (void)
   close (STDOUT_FILENO);
   close (STDERR_FILENO);
 }
-
 
 /*
  * Main function
@@ -240,7 +225,7 @@ int main (int argc, char** argv)
   }
 
   /* demonize */
-  //demonize ();
+  demonize ();
 
   /* export selected GPIO */
   if (export_GPIO (gpio_num) < 0)
@@ -252,6 +237,12 @@ int main (int argc, char** argv)
   if (set_output_GPIO (gpio_num) < 0)
   {
     syslog(LOG_NOTICE, "set_output_GPIO - error\n");
+    exit (EXIT_FAILURE);
+  }
+
+  if (set_GPIO (gpio_num, 1) < 0)
+  {
+    syslog(LOG_NOTICE, "set_GPIO - error\n");
     exit (EXIT_FAILURE);
   }
 
