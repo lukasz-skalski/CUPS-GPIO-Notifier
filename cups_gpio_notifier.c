@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <syslog.h>
 #include <glib.h>
 #include <gio/gio.h>
@@ -33,6 +35,24 @@ GMainLoop *loop = NULL;
 gint gpio_num = 23;
 gint time_to_off = 180;
 guint source_tag = 0;
+
+/*
+ * Functions prototypes 
+ */
+int export_GPIO (gint gpio_pin);
+int unexport_GPIO (gint gpio_pin);
+int set_output_GPIO (gint gpio_pin);
+int set_GPIO (gint gpio_pin, gint value);
+void unix_signal_handler (int signo);
+int printer_off_timeout (gpointer user_data);
+void demonize (void);
+void dbus_signal_callback (GDBusConnection *connection,
+                          const gchar *sender_name,
+                          const gchar *object_path,
+                          const gchar *interface_name,
+                          const gchar *signal_name,
+                          GVariant *parameters,
+                          gpointer user_data);
 
 /* 
  * Commandline options 
@@ -199,9 +219,9 @@ int main (int argc, char** argv)
   GOptionContext *context = NULL;
   GError *error = NULL;
 
-  #ifndef HAVE_GLIB_2_36
+#ifndef HAVE_GLIB_2_36
     g_type_init ();
-  #endif
+#endif
  
   /* open syslog */
   openlog("CUPS GPIO Notifier", LOG_NOWAIT|LOG_PID, LOG_USER);

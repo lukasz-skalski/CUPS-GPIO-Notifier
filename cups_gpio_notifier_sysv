@@ -1,0 +1,26 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: cups_gpio_notifier 
+# Required-Start: $local_fs $all
+# Required-Stop: $local_fs $all
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: cups_gpio_notifier 
+# Description: CUPS GPIO Notifier daemon for Raspberry Pi
+### END INIT INFO
+
+case "$1" in
+  start)
+    echo "Starting CUPS GPIO Notifier daemon"
+    /usr/local/bin/cups_gpio_notifier & > /dev/null 2>&1
+    ;;
+  stop)
+    echo "Stopping CUPS GPIO Notifier daemon"
+    killall cups_gpio_notifier > /dev/null 2>&1
+    ;;
+  *)
+    echo "Usage: /etc/init.d/cups_gpio_notifier_sysv {start|stop}"
+    exit 1
+    ;;
+esac
+exit 0
