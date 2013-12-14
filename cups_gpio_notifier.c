@@ -59,7 +59,7 @@ void dbus_signal_callback (GDBusConnection *connection,
  */
 GOptionEntry entries[] =
 {
-  { "gpio", 'g', 0, G_OPTION_ARG_INT, &gpio_num, "GPIO Output Number [defaut: 23]", NULL },
+  { "gpio", 'g', 0, G_OPTION_ARG_INT, &gpio_num, "GPIO Output Number [default: 23]", NULL },
   { "time", 't', 0, G_OPTION_ARG_INT, &time_to_off, "number of seconds to turn off the printer [default: 180]", NULL },
   { NULL }
 };
